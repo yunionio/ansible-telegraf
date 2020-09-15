@@ -9,6 +9,12 @@
 {% if onecloud_vm_id is defined %}
     vm_id = "{{ onecloud_vm_id }}"
 {% endif %}
+{% if onecloud_tenant_id is defined %}
+    tenant_id = "{{ onecloud_tenant_id }}"
+{% endif %}
+{% if onecloud_domain_id is defined %}
+    domain_id = "{{ onecloud_domain_id }}"
+{% endif %}
 
 {% if telegraf_agent_aws_tags == true and ec2_tags is defined and ec2_tags != None %}
 {% for key, value in ec2_tags.tags.items()%}
