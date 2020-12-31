@@ -18,7 +18,14 @@
     url: https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_agent_version }}_windows_amd64.zip
     dest: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip'
   when:
-    - not file_info.stat.exists
+    - not file_info.stat.exists and telegraf_agent_package_method = "online"
+
+- name: "Windows | Copy Telegraf Agent Zip file"
+  win_copy:
+    src: "{{ telegraf_agent_package_local_path }}/telegraf-{{ telegraf_agent_version }}_windows_amd64.zip"
+    dest: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip'
+  when:
+    - not file_info.stat.exists and telegraf_agent_package_method = "offline"
 
 - name: "Windows | Unzip file"
   win_unzip:
