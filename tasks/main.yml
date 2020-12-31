@@ -1,15 +1,19 @@
 ---
 # tasks file for ansible-telegraf
 
+- name: "Check if Telegraf is installed"
+  package_facts:
+    manager: "auto"
+
 - name: "Install on RedHat"
   include_tasks: "RedHat.yml"
   when:
-    - ansible_os_family == "RedHat" and not telegraf_agent_docker
+    - ansible_os_family == "RedHat" and 'telegraf' not in ansible_facts.packages and not telegraf_agent_docker
 
 - name: "Install on Debian"
   include_tasks: "Debian.yml"
   when:
-    - ansible_os_family == "Debian" and not telegraf_agent_docker
+    - ansible_os_family == "Debian" and 'telegraf' not in ansible_facts.packages and not telegraf_agent_docker
   tags:
     - telegraf
     - packages
