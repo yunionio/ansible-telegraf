@@ -19,6 +19,7 @@ telegraf_agent_flush_jitter: 0
 telegraf_agent_aws_tags: False
 telegraf_agent_aws_tags_prefix: ""
 telegraf_agent_config_path: /etc/telegraf
+telegraf_agent_disable_check_key: no
 
 # Docker specific settings
 telegraf_uid_docker: 998

@@ -100,10 +100,17 @@
   when:
     - telegraf_agent_package_method == "repo"
 
+- name: "Debian | Decide whether to check apt key"
+  set_fact:
+    telegraf_agent_disable_check_key: yes
+  when:
+    - telegraf_agent_package_method == "offline"
+
 - name: "Debian | Install Telegraf package"
   apt:
     deb: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file_deb }}"
     state: "present"
+    allow_unauthenticated: "{{ telegraf_agent_disable_check_key }}"
   register: is_telegraf_package_installed
   until: is_telegraf_package_installed is succeeded
   notify: "Restart Telegraf"
