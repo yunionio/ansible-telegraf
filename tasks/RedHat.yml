@@ -59,7 +59,6 @@
   when:
     - telegraf_agent_package_method == "repo"
 
-  when:
 - name: "RedHat | Install Telegraf package"
   package:
     name: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file_rpm }}"

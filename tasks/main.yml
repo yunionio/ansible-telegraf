@@ -5,15 +5,34 @@
   package_facts:
     manager: "auto"
 
+- name: "Check Telegraf version"
+  command: "/usr/bin/telegraf --version"
+  register: telegraf_current_version
+  when: ansible_os_family == "RedHat" or  ansible_os_family == "Debian" and 'telegraf' in ansible_facts.packages
+  changed_when: False
+  failed_when: False
+
+- name: "Remove Telegraf with old version"
+  package:
+    name: telegraf
+    state: absent
+  register: telegraf_remove
+  when:
+    - telegraf_current_version is defined
+    - telegraf_agent_disable_version is not none
+    - telegraf_current_version.stdout | regex_search(telegraf_agent_disable_version)
+
 - name: "Install on RedHat"
   include_tasks: "RedHat.yml"
-  when:
-    - ansible_os_family == "RedHat" and 'telegraf' not in ansible_facts.packages and not telegraf_agent_docker
+  when: 
+    - ansible_os_family == "RedHat" 
+    - ('telegraf' not in ansible_facts.packages and not telegraf_agent_docker) or telegraf_remove.changed
 
 - name: "Install on Debian"
   include_tasks: "Debian.yml"
-  when:
-    - ansible_os_family == "Debian" and 'telegraf' not in ansible_facts.packages and not telegraf_agent_docker
+  when: 
+    - ansible_os_family == "Debian" 
+    - ('telegraf' not in ansible_facts.packages and not telegraf_agent_docker) or telegraf_remove.changed
   tags:
     - telegraf
     - packages
