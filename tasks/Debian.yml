@@ -88,7 +88,7 @@
     - telegraf_agent_package_method == "offline" and telegraf_agent_package_local_dir != ""
 
 
-- name: "Debian | Install Telegraf package"
+- name: "Debian | Install Telegraf package (repo)"
   apt:
     name: "{{ telegraf_agent_package }}"
     state: "{{ telegraf_agent_package_state }}"
