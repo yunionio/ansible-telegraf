@@ -34,7 +34,7 @@
 - name: "Install on Debian"
   include_tasks: "Debian.yml"
   when: 
-    - ansible_os_family == "Debian"
+    - ansible_os_family == "Debian" or ansible_os_family == "uos"
     - (telegraf_bin.stat.exists == False and not telegraf_agent_docker) or telegraf_remove.changed
   tags:
     - telegraf
