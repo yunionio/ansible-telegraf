@@ -1,16 +1,17 @@
 ---
 # tasks file for ansible-telegraf
 
-- name: "Check if Telegraf is installed"
-  package_facts:
-    manager: "auto"
+- name: "Check if Telegraf bin exists" 
+  stat:
+    path: /usr/bin/telegraf
+  register: telegraf_bin
 
 - name: "Check Telegraf version"
   command: "/usr/bin/telegraf --version"
   register: telegraf_current_version
   when: 
     - ansible_os_family == "RedHat" or  ansible_os_family == "Debian" 
-    - ('telegraf' in ansible_facts.packages)
+    - telegraf_bin.stat.exists == True
   changed_when: False
   failed_when: False
 
@@ -28,13 +29,13 @@
   include_tasks: "RedHat.yml"
   when: 
     - ansible_os_family == "RedHat" 
-    - ('telegraf' not in ansible_facts.packages and not telegraf_agent_docker) or telegraf_remove.changed
+    - (telegraf_bin.stat.exists == False and not telegraf_agent_docker) or telegraf_remove.changed
 
 - name: "Install on Debian"
   include_tasks: "Debian.yml"
   when: 
-    - ansible_os_family == "Debian" 
-    - ('telegraf' not in ansible_facts.packages and not telegraf_agent_docker) or telegraf_remove.changed
+    - ansible_os_family == "Debian"
+    - (telegraf_bin.stat.exists == False and not telegraf_agent_docker) or telegraf_remove.changed
   tags:
     - telegraf
     - packages
