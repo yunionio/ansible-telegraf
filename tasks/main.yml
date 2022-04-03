@@ -5,6 +5,9 @@
   stat:
     path: /usr/bin/telegraf
   register: telegraf_bin
+  when:
+    - ansible_os_family != "Windows"
+    - not telegraf_agent_docker
 
 - name: "Check Telegraf version"
   command: "/usr/bin/telegraf --version"
