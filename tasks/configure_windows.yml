@@ -10,13 +10,13 @@
 
 - name: "Windows | Check if file is already downloaded"
   win_stat:
-    path: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip'
+    path: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file_windows }}'
   register: file_info
 
 - name: "Windows | Download Telegraf Agent Zip file"
   win_get_url:
     url: https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_agent_version }}_windows_amd64.zip
-    dest: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}_windows_amd64.zip'
+    dest: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file_windows }}'
   when:
     - not file_info.stat.exists and telegraf_agent_package_method == "online"
 
@@ -31,12 +31,12 @@
   win_unzip:
     src: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file_windows }}'
     dest: "{{ telegraf_win_install_dir }}"
-    creates: '{{ telegraf_win_install_dir }}\telegraf\telegraf.exe'
+    creates: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}\telegraf.exe'
 
 - name: "Windows | Configure Telegraf"
   win_template:
     src: telegraf.conf.j2
-    dest: '{{ telegraf_win_install_dir }}\telegraf\telegraf.conf'
+    dest: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}\telegraf.conf'
   notify: "Restart Windows Telegraf"
 
 - name: "Windows | Copy telegraf extra plugins"
@@ -66,7 +66,7 @@
   notify: "Restart Windows Telegraf"
 
 - name: "Windows | Register Service"
-  win_command: '{{ telegraf_win_install_dir }}\telegraf\telegraf.exe {{ telegraf_win_service_args | join(" ") }}'
+  win_command: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}\telegraf.exe {{ telegraf_win_service_args | join(" ") }}'
   register: telegraf_windows_install
   args:
     creates: '{{ telegraf_win_install_dir }}\.installed'

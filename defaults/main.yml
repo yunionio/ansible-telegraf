@@ -5,9 +5,9 @@ telegraf_agent_version: 1.10.0
 telegraf_agent_version_patch: 1
 telegraf_agent_disable_version: ""
 telegraf_agent_package: telegraf
-telegraf_agent_package_file_deb: telegraf_{{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}_0-{{ telegraf_agent_package_arch }}.deb
-telegraf_agent_package_file_rpm: telegraf-{{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}-0.{{ ansible_architecture }}.rpm
-telegraf_agent_package_file_windows: telegraf-{{ telegraf_agent_version }}-{{ telegraf_agent_version_patch }}_windows_amd64.zip
+telegraf_agent_package_file_deb: telegraf_{{ telegraf_agent_version }}~{{ telegraf_agent_version_patch }}_0-{{ telegraf_agent_package_arch }}.deb
+telegraf_agent_package_file_rpm: telegraf-{{ telegraf_agent_version }}~{{ telegraf_agent_version_patch }}-0.{{ ansible_architecture }}.rpm
+telegraf_agent_package_file_windows: telegraf-{{ telegraf_agent_version }}~{{ telegraf_agent_version_patch }}_windows_amd64.zip
 telegraf_agent_package_dir: /tmp
 telegraf_agent_package_local_dir: ""
 telegraf_agent_package_method: repo
@@ -83,5 +83,5 @@ telegraf_win_logfile: 'C:\\Telegraf\\telegraf.log'
 telegraf_win_include: 'C:\Telegraf\telegraf_agent.d'
 telegraf_win_service_args:
   - -service install
-  - -config {{ telegraf_win_install_dir }}\telegraf\telegraf.conf
+  - -config {{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}\telegraf.conf
   - --config-directory {{ telegraf_win_include }}
