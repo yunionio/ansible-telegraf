@@ -13,7 +13,7 @@
   command: "/usr/bin/telegraf --version"
   register: telegraf_current_version
   when: 
-    - ansible_os_family == "RedHat" or  ansible_os_family == "Debian" 
+    - ansible_system == 'Linux'
     - telegraf_bin.stat.exists == True
   changed_when: False
   failed_when: False
@@ -31,13 +31,13 @@
 - name: "Install on RedHat"
   include_tasks: "RedHat.yml"
   when: 
-    - ansible_os_family == "RedHat" 
+    - ansible_pkg_mgr == 'yum' or ansible_pkg_mgr == 'dnf'
     - (telegraf_bin.stat.exists == False and not telegraf_agent_docker) or telegraf_remove.changed
 
 - name: "Install on Debian"
   include_tasks: "Debian.yml"
   when: 
-    - ansible_os_family == "Debian" or ansible_os_family == "uos"
+    - ansible_pkg_mgr == 'apt'
     - (telegraf_bin.stat.exists == False and not telegraf_agent_docker) or telegraf_remove.changed
   tags:
     - telegraf

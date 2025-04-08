@@ -7,7 +7,7 @@
         name: which
         state: present
       when:
-        - ansible_os_family == 'RedHat'
+        - ansible_pkg_mgr == 'yum' or ansible_pkg_mgr == 'dnf'
 
     - name: "Installing packages on Debian"
       apt:
@@ -16,7 +16,7 @@
           # - gpg
         state: present
       when:
-        - ansible_os_family == 'Debian'
+        - ansible_pkg_mgr == 'apt'
 
     - name: "Installing packages on Suse"
       zypper:
