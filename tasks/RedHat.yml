@@ -74,4 +74,22 @@
   become: yes
   notify: "Restart Telegraf"
   when:
-    - telegraf_agent_package_method == "online" or telegraf_agent_package_method == "offline"
+    - telegraf_agent_package_method == "online"
+
+- name: "RedHat | Install Telegraf package (offline)"
+  package:
+    name: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file }}"
+    state: "{{ telegraf_agent_package_state }}"
+    disable_gpg_check: "{{ telegraf_agent_disable_check_key }}"
+    # yum/dnf refresh the metadata of every enabled repository even when a
+    # local rpm is installed, so on a host without access to the distro mirrors
+    # the transaction fails with "Failed to download metadata for repo ...".
+    # Disabling the repositories restricts the dependency resolution to the
+    # local rpmdb (telegraf only requires coreutils and /usr/sbin/useradd).
+    disablerepo: "{{ telegraf_agent_offline_disablerepo }}"
+  register: is_telegraf_package_installed
+  until: is_telegraf_package_installed is succeeded
+  become: yes
+  notify: "Restart Telegraf"
+  when:
+    - telegraf_agent_package_method == "offline"

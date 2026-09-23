@@ -33,6 +33,13 @@
   package:
     name: telegraf
     state: absent
+    # A removal transaction refreshes the repository metadata as well, so the
+    # repositories are disabled here too when the host cannot reach them.
+    # omit keeps the argument away from apt/zypper, which do not support it.
+    disablerepo: >-
+      {{ telegraf_agent_offline_disablerepo
+         if (telegraf_agent_package_method == 'offline' and ansible_os_family == 'RedHat')
+         else omit }}
   register: telegraf_remove
   when:
     - telegraf_current_version.stdout is defined

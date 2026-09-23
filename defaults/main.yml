@@ -22,6 +22,14 @@ telegraf_agent_package_src: "{{ telegraf_agent_package_local_dir }}/{{ telegraf_
 telegraf_agent_package_dir: /tmp
 telegraf_agent_package_local_dir: ""
 telegraf_agent_package_method: repo
+# Repositories to disable when installing the rpm in the "offline" method
+# (yum/dnf only). yum and dnf always refresh the metadata of the enabled
+# repositories before running a transaction, which inevitably fails on a host
+# without access to the distro mirrors; "*" disables all of them so that
+# dependencies are resolved from the local rpmdb only. Override it with the id
+# (or a list of ids) of an internal mirror through the playbook params when such
+# a repository is reachable.
+telegraf_agent_offline_disablerepo: "*"
 telegraf_agent_package_state: present
 telegraf_agent_hostname: "{{ ansible_fqdn }}"
 telegraf_agent_interval: 10
