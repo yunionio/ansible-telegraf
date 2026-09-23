@@ -8,6 +8,17 @@ telegraf_agent_package: telegraf
 telegraf_agent_package_file_deb: telegraf_{{ telegraf_agent_version }}~{{ telegraf_agent_version_patch }}-0_{{ telegraf_agent_package_arch }}.deb
 telegraf_agent_package_file_rpm: telegraf-{{ telegraf_agent_version }}~{{ telegraf_agent_version_patch }}-0.{{ ansible_architecture }}.rpm
 telegraf_agent_package_file_windows: telegraf-{{ telegraf_agent_version }}~{{ telegraf_agent_version_patch }}_windows_amd64.zip
+# File name of the package to install, picked per OS family. For the "online"
+# method it is derived from telegraf_agent_version; for the "offline" method
+# tasks/offline_package.yml overrides it with the actual file name found in
+# telegraf_agent_package_local_dir, which may embed a build id.
+telegraf_agent_package_file: >-
+  {{ telegraf_agent_package_file_windows if ansible_os_family == "Windows" else
+     (telegraf_agent_package_file_rpm if ansible_os_family == "RedHat" else
+      telegraf_agent_package_file_deb) }}
+# Full path of the package on the control node, only set for the "offline"
+# method by tasks/offline_package.yml.
+telegraf_agent_package_src: "{{ telegraf_agent_package_local_dir }}/{{ telegraf_agent_package_file }}"
 telegraf_agent_package_dir: /tmp
 telegraf_agent_package_local_dir: ""
 telegraf_agent_package_method: repo

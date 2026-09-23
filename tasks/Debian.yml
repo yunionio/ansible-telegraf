@@ -34,6 +34,7 @@
   register: are_telegraf_dependencies_packages_installed
   until: are_telegraf_dependencies_packages_installed is succeeded
   when:
+    - telegraf_agent_package_method == "repo"
     - not apt_https_transport.stat.exists
   become: yes
 
@@ -80,10 +81,15 @@
   when:
     - telegraf_agent_package_method == "online"
 
+- name: "Debian | Resolve the offline Telegraf package"
+  include_tasks: "offline_package.yml"
+  when:
+    - telegraf_agent_package_method == "offline" and telegraf_agent_package_local_dir != ""
+
 - name: "Debian | Copy Telegraf package"
   copy:
-    src: "{{ telegraf_agent_package_local_dir }}/{{ telegraf_agent_package_file_deb }}"
-    dest: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file_deb }}"
+    src: "{{ telegraf_agent_package_src }}"
+    dest: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file }}"
   when:
     - telegraf_agent_package_method == "offline" and telegraf_agent_package_local_dir != ""
 
@@ -108,7 +114,7 @@
 
 - name: "Debian | Install Telegraf package"
   apt:
-    deb: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file_deb }}"
+    deb: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file }}"
     state: "present"
     allow_unauthenticated: "{{ telegraf_agent_disable_check_key }}"
   register: is_telegraf_package_installed

@@ -1,0 +1,59 @@
+---
+# Resolve the telegraf package shipped in telegraf_agent_package_local_dir.
+# The file name embeds a build id that this role cannot know (for instance
+# telegraf_1.36.3-yn~6cae9663-0_amd64.deb), so the package is looked up instead
+# of being composed from telegraf_agent_version/telegraf_agent_version_patch.
+# The lookup runs on the control node, so it is safe to use for Windows
+# targets too.
+
+- name: "Offline | Set the package file pattern for Debian"
+  set_fact:
+    telegraf_agent_package_pattern: "telegraf_*_{{ telegraf_agent_package_arch | default(ansible_architecture) }}.deb"
+  when: ansible_os_family == "Debian"
+
+- name: "Offline | Set the package file pattern for RedHat"
+  set_fact:
+    telegraf_agent_package_pattern: "telegraf-*.{{ ansible_architecture }}.rpm"
+  when: ansible_os_family == "RedHat"
+
+- name: "Offline | Set the package file pattern for Windows"
+  set_fact:
+    telegraf_agent_package_pattern: "telegraf-*_windows_amd64.zip"
+  when: ansible_os_family == "Windows"
+
+- name: "Offline | Set the fallback package file pattern"
+  set_fact:
+    telegraf_agent_package_pattern: "telegraf*"
+  when: telegraf_agent_package_pattern is not defined
+
+- name: "Offline | Look for the telegraf package in {{ telegraf_agent_package_local_dir }}"
+  find:
+    paths: "{{ telegraf_agent_package_local_dir }}"
+    patterns: "{{ telegraf_agent_package_pattern }}"
+    file_type: file
+    recurse: no
+  register: telegraf_agent_package_lookup
+
+- name: "Offline | Fail when no telegraf package is found"
+  fail:
+    msg: >-
+      unable to find a telegraf package matching
+      "{{ telegraf_agent_package_pattern }}" in
+      "{{ telegraf_agent_package_local_dir }}" (looked at
+      {{ telegraf_agent_package_lookup.examined }} path(s)), please make sure
+      the offline packages are present
+  when: telegraf_agent_package_lookup.matched == 0
+
+- name: "Offline | Warn when several telegraf packages are found"
+  debug:
+    msg: >-
+      several telegraf packages match "{{ telegraf_agent_package_pattern }}" in
+      "{{ telegraf_agent_package_local_dir }}":
+      {{ telegraf_agent_package_lookup.files | map(attribute='path') | list }},
+      using the last one
+  when: telegraf_agent_package_lookup.matched > 1
+
+- name: "Offline | Set the telegraf package facts"
+  set_fact:
+    telegraf_agent_package_src: "{{ telegraf_agent_package_lookup.files | map(attribute='path') | sort | last }}"
+    telegraf_agent_package_file: "{{ telegraf_agent_package_lookup.files | map(attribute='path') | sort | last | basename }}"
