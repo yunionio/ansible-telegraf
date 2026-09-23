@@ -1,5 +1,10 @@
 ---
 
+- name: "Windows | Resolve the offline Telegraf package"
+  include_tasks: "offline_package.yml"
+  when:
+    - telegraf_agent_package_method == "offline" and telegraf_agent_package_local_dir != ""
+
 - name: "Windows | Create directory structure"
   win_file:
     path: "{{ item }}"
@@ -10,26 +15,26 @@
 
 - name: "Windows | Check if file is already downloaded"
   win_stat:
-    path: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file_windows }}'
+    path: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file }}'
   register: file_info
 
 - name: "Windows | Download Telegraf Agent Zip file"
   win_get_url:
     url: https://dl.influxdata.com/telegraf/releases/telegraf-{{ telegraf_agent_version }}_windows_amd64.zip
-    dest: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file_windows }}'
+    dest: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file }}'
   when:
     - not file_info.stat.exists and telegraf_agent_package_method == "online"
 
 - name: "Windows | Copy Telegraf Agent Zip file"
   win_copy:
-    src: "{{ telegraf_agent_package_local_dir }}/{{ telegraf_agent_package_file_windows }}"
-    dest: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file_windows }}'
+    src: "{{ telegraf_agent_package_src }}"
+    dest: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file }}'
   when:
     - not file_info.stat.exists and telegraf_agent_package_method == "offline"
 
 - name: "Windows | Unzip file"
   win_unzip:
-    src: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file_windows }}'
+    src: '{{ telegraf_win_install_dir }}\{{ telegraf_agent_package_file }}'
     dest: "{{ telegraf_win_install_dir }}"
     creates: '{{ telegraf_win_install_dir }}\telegraf-{{ telegraf_agent_version }}\telegraf.exe'
 

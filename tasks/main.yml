@@ -1,6 +1,17 @@
 ---
 # tasks file for ansible-telegraf
 
+- name: "Check offline installation preconditions"
+  fail:
+    msg: >-
+      telegraf_agent_package_local_dir must be set when
+      telegraf_agent_package_method is "offline", so that the telegraf package
+      shipped with the ansibleserver can be used
+  when:
+    - telegraf_agent_package_method == "offline"
+    - telegraf_agent_package_local_dir | default('') == ''
+    - not telegraf_agent_docker
+
 - name: "Check if Telegraf bin exists" 
   stat:
     path: /usr/bin/telegraf
