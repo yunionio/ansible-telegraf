@@ -3,8 +3,11 @@
 # The file name embeds a build id that this role cannot know (for instance
 # telegraf_1.36.3-yn~6cae9663-0_amd64.deb), so the package is looked up instead
 # of being composed from telegraf_agent_version/telegraf_agent_version_patch.
-# The lookup runs on the control node, so it is safe to use for Windows
-# targets too.
+#
+# The directory only exists on the control node (it is shipped inside the
+# ansibleserver image), so the lookup is delegated to localhost; without
+# delegate_to the find module would run on the managed host and fail with
+# "'/opt/yunion/ansible-install-pkg' is not a directory".
 
 - name: "Offline | Set the package file pattern for Debian"
   set_fact:
@@ -32,6 +35,8 @@
     patterns: "{{ telegraf_agent_package_pattern }}"
     file_type: file
     recurse: no
+  delegate_to: localhost
+  become: false
   register: telegraf_agent_package_lookup
 
 - name: "Offline | Fail when no telegraf package is found"
@@ -39,9 +44,9 @@
     msg: >-
       unable to find a telegraf package matching
       "{{ telegraf_agent_package_pattern }}" in
-      "{{ telegraf_agent_package_local_dir }}" (looked at
+      "{{ telegraf_agent_package_local_dir }}" on the ansibleserver (looked at
       {{ telegraf_agent_package_lookup.examined }} path(s)), please make sure
-      the offline packages are present
+      the offline packages are present in the image
   when: telegraf_agent_package_lookup.matched == 0
 
 - name: "Offline | Warn when several telegraf packages are found"
