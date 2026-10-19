@@ -77,18 +77,21 @@
     - telegraf_agent_package_method == "online"
 
 - name: "RedHat | Install Telegraf package (offline)"
-  package:
-    name: "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file }}"
-    state: "{{ telegraf_agent_package_state }}"
-    disable_gpg_check: "{{ telegraf_agent_disable_check_key }}"
-    # yum/dnf refresh the metadata of every enabled repository even when a
-    # local rpm is installed, so on a host without access to the distro mirrors
-    # the transaction fails with "Failed to download metadata for repo ...".
-    # Disabling the repositories restricts the dependency resolution to the
-    # local rpmdb (telegraf only requires coreutils and /usr/sbin/useradd).
-    disablerepo: "{{ telegraf_agent_offline_disablerepo }}"
+  # Use rpm so yum- and dnf-based hosts behave the same and no repository
+  # metadata is refreshed. Telegraf only requires packages that are already
+  # present on a normal system (coreutils, /usr/sbin/useradd).
+  # Avoids both "There are no enabled repos" (disablerepo=*) and
+  # "Failed to download metadata for repo ..." (unreachable mirrors).
+  command: >-
+    rpm -Uvh
+    {% if telegraf_agent_disable_check_key | bool %}--nosignature --nodigest{% endif %}
+    {{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file }}
   register: is_telegraf_package_installed
-  until: is_telegraf_package_installed is succeeded
+  changed_when: >-
+    'is already installed' not in (is_telegraf_package_installed.stderr | default(''))
+  failed_when: >-
+    is_telegraf_package_installed.rc != 0
+    and ('is already installed' not in (is_telegraf_package_installed.stderr | default('')))
   become: yes
   notify: "Restart Telegraf"
   when:
