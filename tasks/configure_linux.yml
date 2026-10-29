@@ -118,6 +118,45 @@
     - Restart Telegraf
     - Restart Telegraf container
 
+- name: "Ensure telegraf systemd drop-in directory exists"
+  file:
+    path: /etc/systemd/system/telegraf.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: yes
+  when:
+    - ansible_service_mgr == "systemd"
+    - not telegraf_agent_docker
+
+- name: "Run telegraf service as root"
+  copy:
+    dest: /etc/systemd/system/telegraf.service.d/override.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Service]
+      User=root
+      Group=root
+  become: yes
+  when:
+    - ansible_service_mgr == "systemd"
+    - not telegraf_agent_docker
+  register: telegraf_systemd_user_override
+  notify:
+    - Restart Telegraf
+
+- name: "Reload systemd after telegraf user override"
+  systemd:
+    daemon_reload: true
+  become: yes
+  when:
+    - ansible_service_mgr == "systemd"
+    - not telegraf_agent_docker
+    - telegraf_systemd_user_override.changed | default(false)
+
 - name: "Force restart service after reread config"
   meta: flush_handlers
 
