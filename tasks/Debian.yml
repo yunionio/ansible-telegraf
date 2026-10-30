@@ -122,4 +122,21 @@
   notify: "Restart Telegraf"
   become: yes
   when:
-    - telegraf_agent_package_method == "online" or telegraf_agent_package_method == "offline"
+    - telegraf_agent_package_method == "online"
+
+- name: "Debian | Install Telegraf package (offline)"
+  command:
+    argv:
+      - dpkg
+      - -i
+      - "{{ telegraf_agent_package_dir }}/{{ telegraf_agent_package_file }}"
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  register: is_telegraf_package_installed
+  changed_when: >-
+    'Unpacking' in (is_telegraf_package_installed.stdout | default(''))
+    or 'Setting up' in (is_telegraf_package_installed.stdout | default(''))
+  notify: "Restart Telegraf"
+  become: yes
+  when:
+    - telegraf_agent_package_method == "offline"
